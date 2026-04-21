@@ -17,7 +17,7 @@ spieler = [
 # Paarungen: (weiß, schwarz, ergebnis_weiß)
 # Ergebnis: 1 = Weiß gewinnt, 0.5 = Remis, 0 = Schwarz gewinnt, None = wird noch gespielt
 # Alle Ergebnisse
-schedule2 = [
+schedule = [
     # Runde 1
     (0, 1, 1.0), (2, 3, 0.5), (4, 5, 1.0), (6, 7, 1.0),
     # Runde 2
@@ -47,68 +47,6 @@ schedule2 = [
     # Runde 14
     (1, 6, 0.0), (4, 7, 0.5), (2, 5, 0.0), (0, 3, 0.5),
 ]
-# Turnier nach der Hälfte der Spiele
-schedule = [
-    # Runde 1
-    (0, 1, 1.0), (2, 3, 0.5), (4, 5, 1.0), (6, 7, 1.0),
-    # Runde 2
-    (1, 7, 0.5), (5, 6, 0.5), (3, 4, 0.5), (0, 2, 0.5),
-    # Runde 3
-    (2, 1, 0.5), (4, 0, 0.0), (6, 3, 1.0), (7, 5, 0.5),
-    # Runde 4
-    (1, 5, 0.0), (3, 7, 0.5), (0, 6, 1.0), (2, 4, 0.5),
-    # Runde 5
-    (4, 1, 0.5), (6, 2, 1.0), (7, 0, 0.0), (5, 3, 0.5),
-    # Runde 6
-    (6, 1, 0.5), (7, 4, 0.5), (5, 2, 0.5), (3, 0, 0.0),
-    # Runde 7
-    (1, 3, 0.0), (0, 5, 0.5), (2, 7, 0.5), (4, 6, 0.5),
-    # Runde 8
-    (1, 0, None), (3, 2, None), (5, 4, None), (7, 6, None),
-    # Runde 9
-    (7, 1, None), (6, 5, None), (4, 3, None), (2, 0, None),
-    # Runde 10
-    (1, 2, None), (0, 4, None), (3, 6, None), (5, 7, None),
-    # Runde 11
-    (5, 1, None), (7, 3, None), (6, 0, None), (4, 2, None),
-    # Runde 12
-    (1, 4, None), (2, 6, None), (0, 7, None), (3, 5, None),
-    # Runde 13
-    (3, 1, None), (5, 0, None), (7, 2, None), (6, 4, None),
-    # Runde 14
-    (1, 6, None), (4, 7, None), (2, 5, None), (0, 3, None),
-]
-# Turnier zu Beginn
-schedule2 = [
-    # Runde 1
-    (0, 1, None), (2, 3, None), (4, 5, None), (6, 7, None),
-    # Runde 2
-    (1, 7, None), (5, 6, None), (3, 4, None), (0, 2, None),
-    # Runde 3
-    (2, 1, None), (4, 0, None), (6, 3, None), (7, 5, None),
-    # Runde 4
-    (1, 5, None), (3, 7, None), (0, 6, None), (2, 4, None),
-    # Runde 5
-    (4, 1, None), (6, 2, None), (7, 0, None), (5, 3, None),
-    # Runde 6
-    (6, 1, None), (7, 4, None), (5, 2, None), (3, 0, None),
-    # Runde 7
-    (1, 3, None), (0, 5, None), (2, 7, None), (4, 6, None),
-    # Runde 8
-    (1, 0, None), (3, 2, None), (5, 4, None), (7, 6, None),
-    # Runde 9
-    (7, 1, None), (6, 5, None), (4, 3, None), (2, 0, None),
-    # Runde 10
-    (1, 2, None), (0, 4, None), (3, 6, None), (5, 7, None),
-    # Runde 11
-    (5, 1, None), (7, 3, None), (6, 0, None), (4, 2, None),
-    # Runde 12
-    (1, 4, None), (2, 6, None), (0, 7, None), (3, 5, None),
-    # Runde 13
-    (3, 1, None), (5, 0, None), (7, 2, None), (6, 4, None),
-    # Runde 14
-    (1, 6, None), (4, 7, None), (2, 5, None), (0, 3, None),
-]
 
 def calculate_probability(elo_a, elo_b):
     # eloformel zum Bestimmen des Erwartungswertes einer Partie
@@ -127,32 +65,35 @@ def simulate_game(elo_a, elo_b):
     else:
         return 0.5 # Remis
 
-def simulate_tournament():
+def simulate_tournament(s_round):
     points = defaultdict(float)
-    for white, black, result in schedule:
-        if result is None:
+    for i, (white, black, result) in enumerate(schedule):
+        round = i // 4 + 1
+        if round >= s_round:
             # Noch nicht gespielte Partien simulieren
-            w = simulate_game(spieler[white][1], spieler[black][1])
+            r = simulate_game(spieler[white][1], spieler[black][1])
         else:
             # Bereits gespielt Partien
-            w = result
-        points[white] += w
-        points[black] += (1 - w)
+            r = result
+        points[white] += r
+        points[black] += (1 - r)
     # zufällig einen Führenden mit gleicher Punktzahl auswählen
     max_score = max(points.values())
     leaders = [i for i in range(len(spieler)) if points[i] == max_score]
     return random.choice(leaders)
 
 # Monte-Carlo
-N = 1000000 # Anzahl Simulationen
+N = 1000000      # Anzahl Simulationen
+start_round = 7  # Ab dieser Runde simulieren
 wins = defaultdict(int)
 for _ in range(N):
-    wins[simulate_tournament()] += 1
+    wins[simulate_tournament(start_round)] += 1
 
 # aktuelle Punktzahl
 stand = defaultdict(float)
-for white, black, result in schedule:
-    if result is not None:
+for i, (white, black, result) in enumerate(schedule):
+    round = i // 4 + 1
+    if round < start_round:
         stand[white] += result
         stand[black] += (1 - result)
 
