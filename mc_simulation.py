@@ -2,6 +2,9 @@
 import random
 from collections import defaultdict
 
+N = 1000000      # Anzahl Simulationen
+start_round = 7  # Ab dieser Runde simulieren
+
 # Echte Spielerelo vor dem Turnier (Stand: März 2026)
 spieler = [
     ("Sindarov", 2745),       # 0
@@ -83,8 +86,6 @@ def simulate_tournament(s_round):
     return random.choice(leaders)
 
 # Monte-Carlo
-N = 1000000      # Anzahl Simulationen
-start_round = 7  # Ab dieser Runde simulieren
 wins = defaultdict(int)
 for _ in range(N):
     wins[simulate_tournament(start_round)] += 1
