@@ -5,7 +5,7 @@ from collections import defaultdict
 class MonteCarlo:
     def __init__(self, N, start_round):
         self.N = N # Anzahl Simulationen
-        self.start_round = start_round # Ab dieser Runde simulieren
+        self.start_round = start_round + 1 # Ab dieser Runde simulieren
         # Echte Spielerelo (Stand: März 2026)
         self.players = [
             ("Sindarov", 2745),       # 0
@@ -104,7 +104,7 @@ class MonteCarlo:
 
 def main():
     # Simulation starten
-    mc = MonteCarlo(1000000, 7)
+    mc = MonteCarlo(1000000, 6)
     wins = mc.run_monte_carlo()
 
     # Ausgabe der Daten; Tabelle
