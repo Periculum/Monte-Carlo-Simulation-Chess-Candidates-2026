@@ -54,8 +54,8 @@ class MonteCarlo:
         # aktuellen Punktestand für die Tabelle kalkulieren
         points = defaultdict(float)
         for i, (white, black, result) in enumerate(self.schedule):
-            round = i // 4 + 1
-            if round < self.start_round:
+            s_round = i // 4 + 1
+            if s_round < self.start_round:
                 points[white] += result
                 points[black] += (1 - result)
         return points
@@ -77,11 +77,11 @@ class MonteCarlo:
         else:
             return 0.5 # Remis
 
-    def simulate_tournament(self, s_round):
+    def simulate_tournament(self):
         points = defaultdict(float)
         for i, (white, black, result) in enumerate(self.schedule):
-            round = i // 4 + 1
-            if round >= s_round:
+            s_round = i // 4 + 1
+            if s_round >= self.start_round:
                 # Noch nicht gespielte Partien simulieren
                 r = self.simulate_game(self.players[white][1], self.players[black][1])
             else:
@@ -98,14 +98,14 @@ class MonteCarlo:
         # Turnier-Sieger zählen
         wins = defaultdict(int)
         for _ in range(self.N):
-            wins[self.simulate_tournament(self.start_round)] += 1
+            wins[self.simulate_tournament()] += 1
         return wins
 
 
 def main():
     # Simulation starten
     mc = MonteCarlo(1000000, 7)
-    wins = mc.run_monte_carlo()   
+    wins = mc.run_monte_carlo()
 
     # Ausgabe der Daten; Tabelle
     points = mc.get_points()
