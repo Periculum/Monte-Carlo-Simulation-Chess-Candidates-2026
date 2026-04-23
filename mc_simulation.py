@@ -3,9 +3,11 @@ import random
 from collections import defaultdict
 
 class MonteCarlo:
-    def __init__(self, N, start_round):
-        self.N = N # Anzahl Simulationen
-        self.start_round = start_round + 1 # Ab dieser Runde simulieren
+    def __init__(self):
+        self.sim_count = 1000000 # Anzahl Simulationen
+        self.start_round = 7     # Ab dieser Runde simulieren
+        self.white_bonus = 35    # Weißvorteil
+        self.draw_rate = 0.6     # Remisrate
         # Echte Spielerelo (Stand: März 2026)
         self.players = [
             ("Sindarov", 2745),       # 0
@@ -17,7 +19,7 @@ class MonteCarlo:
             ("Caruana", 2795),        # 6
             ("Nakamura", 2810)]       # 7
 
-        # Paarungen: (weiß, schwarz, ergebnis_weiß)
+        # Paarungen: (weiß, schwarz, ergebnis)
         # Ergebnis: 1 = Weiß gewinnt, 0.5 = Remis, 0 = Schwarz gewinnt
         self.schedule = [
             # Runde 1
@@ -50,6 +52,13 @@ class MonteCarlo:
             (1, 6, 0.0), (4, 7, 0.5), (2, 5, 0.0), (0, 3, 0.5),
         ]
 
+        # Gewinnwahrscheinlichkeit für noch nicht gespielte Partien vorberechnen
+        self.win_probs = {
+            i: self.calculate_probability(self.players[white][1] + self.white_bonus, self.players[black][1])
+            for i, (white, black, _) in enumerate(self.schedule)
+            if i // 4 + 1 >= self.start_round
+        }
+
     def get_points(self):
         # aktuellen Punktestand für die Tabelle kalkulieren
         points = defaultdict(float)
@@ -64,16 +73,11 @@ class MonteCarlo:
         # eloformel zum Bestimmen des Erwartungswertes einer Partie
         return 1 / (1 + 10 ** ((elo_b - elo_a) / 400))
 
-    def simulate_game(self, elo_a, elo_b):
-        elo_a += 35 #Weißvorteil
-        p = self.calculate_probability(elo_a, elo_b)
-        
+    def simulate_game(self, p):        
         # 40 Prozent der Partien sind entscheidend; 60 Prozent Remis
-        if random.random() > 0.60:          
-            if random.random() < p:
-                return 1.0 # Weiß gewinnt
-            else:
-                return 0.0 # Schwarz gewinnt
+        if random.random() > self.draw_rate:
+            # Weiß/Schwarz gewinnt
+            return 1.0 if random.random() < p else 0.0 
         else:
             return 0.5 # Remis
 
@@ -83,7 +87,7 @@ class MonteCarlo:
             s_round = i // 4 + 1
             if s_round >= self.start_round:
                 # Noch nicht gespielte Partien simulieren
-                r = self.simulate_game(self.players[white][1], self.players[black][1])
+                r = self.simulate_game(self.win_probs[i])
             else:
                 # Bereits gespielt Partien
                 r = result
@@ -97,14 +101,14 @@ class MonteCarlo:
     def run_monte_carlo(self):
         # Turnier-Sieger zählen
         wins = defaultdict(int)
-        for _ in range(self.N):
+        for _ in range(self.sim_count):
             wins[self.simulate_tournament()] += 1
         return wins
 
 
 def main():
     # Simulation starten
-    mc = MonteCarlo(1000000, 6)
+    mc = MonteCarlo()
     wins = mc.run_monte_carlo()
 
     # Ausgabe der Daten; Tabelle
@@ -112,7 +116,7 @@ def main():
     print(f"{'Spieler':<18} {'Elo':>4}  {'Punkte':>8}  {'Wahrsch.':>10}  {'Siege':>4}")
     print("-" * 52)
     for i, (name, elo) in sorted(enumerate(mc.players), key=lambda x: -wins[x[0]]):
-        print(f"{name:<18} {elo:>5}  {points[i]:>6}  {wins[i]/mc.N*100:>8.1f}% {wins[i]:>8}")
+        print(f"{name:<18} {elo:>5}  {points[i]:>6}  {wins[i]/mc.sim_count*100:>8.1f}% {wins[i]:>8}")
 
 if __name__ == '__main__':
     main()
