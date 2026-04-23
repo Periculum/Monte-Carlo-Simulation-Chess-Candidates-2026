@@ -5,9 +5,10 @@ from collections import defaultdict
 class MonteCarlo:
     def __init__(self):
         self.sim_count = 1000000 # Anzahl Simulationen
-        self.start_round = 7     # Ab dieser Runde simulieren
+        self.start_round = 8     # Ab dieser Runde simulieren
         self.white_bonus = 35    # Weißvorteil
         self.draw_rate = 0.6     # Remisrate
+        
         # Echte Spielerelo (Stand: März 2026)
         self.players = [
             ("Sindarov", 2745),       # 0
