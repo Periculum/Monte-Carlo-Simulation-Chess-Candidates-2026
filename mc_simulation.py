@@ -79,8 +79,7 @@ class MonteCarlo:
         if random.random() > self.draw_rate:
             # Weiß/Schwarz gewinnt
             return 1.0 if random.random() < p else 0.0 
-        else:
-            return 0.5 # Remis
+        return 0.5 # Remis
 
     def simulate_tournament(self):
         points = defaultdict(float)
