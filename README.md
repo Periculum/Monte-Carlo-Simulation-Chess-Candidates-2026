@@ -21,16 +21,16 @@ The draw rate of 60% is derived from all Candidates Tournament games since 2013:
 
 For the Defaultsettings the Model came to these Results:
 ```
-Players             Elo    Points      Prob.    Wins
-----------------------------------------------------
-Sindarov            2745     6.0      81.4%   813775
-Caruana             2795     4.5      14.8%   148436
-Giri                2753     3.5       1.6%    15889
-Praggnanandhaa      2741     3.5       1.3%    13157
-Wei Yi              2754     3.0       0.5%     4612
-Bluebaum            2698     3.0       0.2%     2033
-Nakamura            2810     2.5       0.2%     2027
-Esipenko            2698     2.0       0.0%       71
+Player              Elo    Points  Probability  Wins
+------------------------------------------------------
+Sindarov            2745     6.0       81.3%   813462
+Caruana             2795     4.5       14.9%   149099
+Giri                2753     3.5        1.6%    15999
+Praggnanandhaa      2741     3.5        1.3%    12840
+Wei Yi              2754     3.0        0.5%     4555
+Nakamura            2810     2.5        0.2%     2020
+Bluebaum            2698     3.0        0.2%     1947
+Esipenko            2698     2.0        0.0%       78
 ```
 
 ## Copyright
