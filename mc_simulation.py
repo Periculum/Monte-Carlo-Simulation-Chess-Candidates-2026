@@ -4,12 +4,12 @@ from collections import defaultdict
 
 class MonteCarlo:
     def __init__(self):
-        self.sim_count = 1000000 # Anzahl Simulationen
-        self.start_round = 8     # Ab dieser Runde simulieren
-        self.white_bonus = 35    # Weißvorteil
-        self.draw_rate = 0.6     # Remisrate
-        
-        # Echte Spielerelo (Stand: März 2026)
+        self.sim_count = 1000000  # Number of simulations
+        self.start_round = 8      # Simulate from this round onwards
+        self.white_bonus = 35     # White player advantage
+        self.draw_rate = 0.6      # Draw rate
+
+        # Player Elo ratings (as of March 2026)
         self.players = [
             ("Sindarov", 2745),       # 0
             ("Esipenko", 2698),       # 1
@@ -20,40 +20,40 @@ class MonteCarlo:
             ("Caruana", 2795),        # 6
             ("Nakamura", 2810)]       # 7
 
-        # Paarungen: (weiß, schwarz, ergebnis)
-        # Ergebnis: 1 = Weiß gewinnt, 0.5 = Remis, 0 = Schwarz gewinnt
+        # Pairings: (white, black, result)
+        # Result: 1 = white wins, 0.5 = draw, 0 = black wins
         self.schedule = [
-            # Runde 1
+            # Round 1
             (0, 1, 1.0), (2, 3, 0.5), (4, 5, 1.0), (6, 7, 1.0),
-            # Runde 2
+            # Round 2
             (1, 7, 0.5), (5, 6, 0.5), (3, 4, 0.5), (0, 2, 0.5),
-            # Runde 3
+            # Round 3
             (2, 1, 0.5), (4, 0, 0.0), (6, 3, 1.0), (7, 5, 0.5),
-            # Runde 4
+            # Round 4
             (1, 5, 0.0), (3, 7, 0.5), (0, 6, 1.0), (2, 4, 0.5),
-            # Runde 5
+            # Round 5
             (4, 1, 0.5), (6, 2, 1.0), (7, 0, 0.0), (5, 3, 0.5),
-            # Runde 6
+            # Round 6
             (6, 1, 0.5), (7, 4, 0.5), (5, 2, 0.5), (3, 0, 0.0),
-            # Runde 7
+            # Round 7
             (1, 3, 0.0), (0, 5, 0.5), (2, 7, 0.5), (4, 6, 0.5),
-            # Runde 8
+            # Round 8
             (1, 0, 0.5), (3, 2, 0.5), (5, 4, 1.0), (7, 6, 1.0),
-            # Runde 9
+            # Round 9
             (7, 1, 0.5), (6, 5, 0.0), (4, 3, 0.5), (2, 0, 0.5),
-            # Runde 10
+            # Round 10
             (1, 2, 0.5), (0, 4, 1.0), (3, 6, 0.5), (5, 7, 0.5),
-            # Runde 11
+            # Round 11
             (5, 1, 0.5), (7, 3, 0.5), (6, 0, 0.5), (4, 2, 0.5),
-            # Runde 12
+            # Round 12
             (1, 4, 0.5), (2, 6, 0.5), (0, 7, 0.5), (3, 5, 0.5),
-            # Runde 13
+            # Round 13
             (3, 1, 1.0), (5, 0, 0.5), (7, 2, 0.5), (6, 4, 0.5),
-            # Runde 14
+            # Round 14
             (1, 6, 0.0), (4, 7, 0.5), (2, 5, 0.0), (0, 3, 0.5),
         ]
 
-        # Gewinnwahrscheinlichkeit für noch nicht gespielte Partien vorberechnen
+        # Pre-calculate win probabilities for games to be simulated
         self.win_probs = {
             i: self.calculate_probability(self.players[white][1] + self.white_bonus, self.players[black][1])
             for i, (white, black, _) in enumerate(self.schedule)
@@ -61,7 +61,7 @@ class MonteCarlo:
         }
 
     def get_points(self):
-        # aktuellen Punktestand für die Tabelle kalkulieren
+        # Calculate current standings based on completed games
         points = defaultdict(float)
         for i, (white, black, result) in enumerate(self.schedule):
             s_round = i // 4 + 1
@@ -71,35 +71,35 @@ class MonteCarlo:
         return points
 
     def calculate_probability(self, elo_a, elo_b):
-        # eloformel zum Bestimmen des Erwartungswertes einer Partie
+        # Elo formula to determine the expected score of a game
         return 1 / (1 + 10 ** ((elo_b - elo_a) / 400))
 
-    def simulate_game(self, p):        
-        # 40 Prozent der Partien sind entscheidend; 60 Prozent Remis
+    def simulate_game(self, p):
+        # 40% of games are decisive; 60% are draws
         if random.random() > self.draw_rate:
-            # Weiß/Schwarz gewinnt
-            return 1.0 if random.random() < p else 0.0 
-        return 0.5 # Remis
+            # White or black wins
+            return 1.0 if random.random() < p else 0.0
+        return 0.5  # Draw
 
     def simulate_tournament(self):
         points = defaultdict(float)
         for i, (white, black, result) in enumerate(self.schedule):
             s_round = i // 4 + 1
             if s_round >= self.start_round:
-                # Noch nicht gespielte Partien simulieren
+                # Simulate games not yet played
                 r = self.simulate_game(self.win_probs[i])
             else:
-                # Bereits gespielt Partien
+                # Use real result for completed games
                 r = result
             points[white] += r
             points[black] += (1 - r)
-        # zufällig einen Führenden mit gleicher Punktzahl auswählen
+        # Randomly pick a winner in case of a tie
         max_score = max(points.values())
         leaders = [i for i in range(len(self.players)) if points[i] == max_score]
         return random.choice(leaders)
 
     def run_monte_carlo(self):
-        # Turnier-Sieger zählen
+        # Count tournament winners across all simulations
         wins = defaultdict(int)
         for _ in range(self.sim_count):
             wins[self.simulate_tournament()] += 1
@@ -107,16 +107,16 @@ class MonteCarlo:
 
 
 def main():
-    # Simulation starten
+    # Run simulation
     mc = MonteCarlo()
     wins = mc.run_monte_carlo()
 
-    # Ausgabe der Daten; Tabelle
+    # Print results table
     points = mc.get_points()
-    print(f"{'Spieler':<18} {'Elo':>4}  {'Punkte':>8}  {'Wahrsch.':>10}  {'Siege':>4}")
-    print("-" * 52)
+    print(f"{'Player':<18} {'Elo':>4}  {'Points':>8}  {'Probability':>11}  {'Wins':>4}")
+    print("-" * 54)
     for i, (name, elo) in sorted(enumerate(mc.players), key=lambda x: -wins[x[0]]):
-        print(f"{name:<18} {elo:>5}  {points[i]:>6}  {wins[i]/mc.sim_count*100:>8.1f}% {wins[i]:>8}")
+        print(f"{name:<18} {elo:>5}  {points[i]:>6}  {wins[i]/mc.sim_count*100:>9.1f}% {wins[i]:>8}")
 
 if __name__ == '__main__':
     main()
